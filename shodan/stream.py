@@ -74,13 +74,12 @@ class Stream:
 
     def alert(self, aid=None, timeout=None, raw=False):
         if aid:
-            stream = self._create_stream('/shodan/alert/%s' % aid, timeout=timeout)
+            stream = self._create_stream(f'/shodan/alert/{aid}', timeout=timeout)
         else:
             stream = self._create_stream('/shodan/alert', timeout=timeout)
 
         try:
-            for line in self._iter_stream(stream, raw):
-                yield line
+            yield from self._iter_stream(stream, raw)
         except requests.exceptions.ConnectionError:
             raise APIError('Stream timed out')
         except ssl.SSLError:
@@ -93,17 +92,15 @@ class Stream:
         :param asn: A list of ASN to return banner data on.
         :type asn: string[]
         """
-        stream = self._create_stream('/shodan/asn/%s' % ','.join(asn), timeout=timeout)
-        for line in self._iter_stream(stream, raw):
-            yield line
+        stream = self._create_stream(f"/shodan/asn/{','.join(asn)}", timeout=timeout)
+        yield from self._iter_stream(stream, raw)
 
     def banners(self, raw=False, timeout=None):
         """A real-time feed of the data that Shodan is currently collecting. Note that this is only available to
         API subscription plans and for those it only returns a fraction of the data.
         """
         stream = self._create_stream('/shodan/banners', timeout=timeout)
-        for line in self._iter_stream(stream, raw):
-            yield line
+        yield from self._iter_stream(stream, raw)
 
     def countries(self, countries, raw=False, timeout=None):
         """
@@ -112,9 +109,11 @@ class Stream:
         :param countries: A list of countries to return banner data on.
         :type countries: string[]
         """
-        stream = self._create_stream('/shodan/countries/%s' % ','.join(countries), timeout=timeout)
-        for line in self._iter_stream(stream, raw):
-            yield line
+        stream = self._create_stream(
+            f"/shodan/countries/{','.join(countries)}", timeout=timeout
+        )
+
+        yield from self._iter_stream(stream, raw)
 
     def custom(self, query, raw=False, timeout=None):
         """
@@ -125,8 +124,7 @@ class Stream:
         :type query: string
         """
         stream = self._create_stream('/shodan/custom', query=query, timeout=timeout)
-        for line in self._iter_stream(stream, raw):
-            yield line
+        yield from self._iter_stream(stream, raw)
 
     def ports(self, ports, raw=False, timeout=None):
         """
@@ -135,9 +133,12 @@ class Stream:
         :param ports: A list of ports to return banner data on.
         :type ports: int[]
         """
-        stream = self._create_stream('/shodan/ports/%s' % ','.join([str(port) for port in ports]), timeout=timeout)
-        for line in self._iter_stream(stream, raw):
-            yield line
+        stream = self._create_stream(
+            f"/shodan/ports/{','.join([str(port) for port in ports])}",
+            timeout=timeout,
+        )
+
+        yield from self._iter_stream(stream, raw)
 
     def tags(self, tags, raw=False, timeout=None):
         """
@@ -146,9 +147,8 @@ class Stream:
         :param tags: A list of tags to return banner data on.
         :type tags: string[]
         """
-        stream = self._create_stream('/shodan/tags/%s' % ','.join(tags), timeout=timeout)
-        for line in self._iter_stream(stream, raw):
-            yield line
+        stream = self._create_stream(f"/shodan/tags/{','.join(tags)}", timeout=timeout)
+        yield from self._iter_stream(stream, raw)
 
     def vulns(self, vulns, raw=False, timeout=None):
         """
@@ -157,6 +157,8 @@ class Stream:
         :param vulns: A list of vulns to return banner data on.
         :type vulns: string[]
         """
-        stream = self._create_stream('/shodan/vulns/%s' % ','.join(vulns), timeout=timeout)
-        for line in self._iter_stream(stream, raw):
-            yield line
+        stream = self._create_stream(
+            f"/shodan/vulns/{','.join(vulns)}", timeout=timeout
+        )
+
+        yield from self._iter_stream(stream, raw)

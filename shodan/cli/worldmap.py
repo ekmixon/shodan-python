@@ -125,17 +125,18 @@ class AsciiMap(object):
 
         # Grab 5 random banners to display
         for banner in random.sample(data, min(len(data), 5)):
-            desc = '{} -> {} / {}'.format(get_ip(banner), banner['port'], banner['location']['country_code'])
+            desc = f"{get_ip(banner)} -> {banner['port']} / {banner['location']['country_code']}"
+
             if banner['location']['city']:
                 # Not all cities can be encoded in ASCII so ignore any errors
                 try:
-                    desc += ' {}'.format(banner['location']['city'])
+                    desc += f" {banner['location']['city']}"
                 except Exception:
                     pass
-            
+
             if 'tags' in banner and banner['tags']:
-                desc += ' / {}'.format(','.join(banner['tags']))
-            
+                desc += f" / {','.join(banner['tags'])}"
+
             entry = (
                 float(banner['location']['latitude']),
                 float(banner['location']['longitude']),
@@ -165,11 +166,7 @@ class AsciiMap(object):
             if self.colors and color:
                 attrs |= curses.color_pair(self.colors[color])
             self.window.addstr(char_y, char_x, char, attrs)
-            if desc:
-                det_show = "%s %s" % (char, desc)
-            else:
-                det_show = None
-
+            det_show = f"{char} {desc}" if desc else None
             if det_show is not None:
                 try:
                     self.window.addstr(row, 1, det_show, attrs)
@@ -196,10 +193,9 @@ class MapApp(object):
         refresh = False
         if force_refresh or self.data is None:
             refresh = True
-        else:
-            if self.last_fetch + self.polling_interval <= epoch_now:
-                refresh = True
-        
+        elif self.last_fetch + self.polling_interval <= epoch_now:
+            refresh = True
+
         if refresh:
             try:
                 # Grab 20 banners from the main stream

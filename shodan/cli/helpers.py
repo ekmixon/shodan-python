@@ -20,7 +20,7 @@ except NameError:
 def get_api_key():
     '''Returns the API key of the current logged-in user.'''
     shodan_dir = os.path.expanduser(SHODAN_CONFIG_DIR)
-    keyfile = shodan_dir + '/api_key'
+    keyfile = f'{shodan_dir}/api_key'
 
     # If the file doesn't yet exist let the user know that they need to
     # initialize the shodan cli
@@ -38,7 +38,7 @@ def get_api_key():
 def escape_data(args):
     # Make sure the string is unicode so the terminal can properly display it
     # We do it using format() so it works across Python 2 and 3
-    args = u'{}'.format(args)
+    args = f'{args}'
     return args.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
 
 
@@ -47,7 +47,7 @@ def timestr():
 
 
 def open_streaming_file(directory, timestr, compresslevel=9):
-    return gzip.open('%s/%s.json.gz' % (directory, timestr), 'a', compresslevel)
+    return gzip.open(f'{directory}/{timestr}.json.gz', 'a', compresslevel)
 
 
 def get_banner_field(banner, flat_field):
@@ -103,17 +103,13 @@ def match_filters(banner, filters):
         elif field_type == float:
             if float(check) != value:
                 return False
-        else:
-            # Ignore unknown types
-            pass
-
     return True
 
 
 def async_spinner(finished):
     spinner = itertools.cycle(['-', '/', '|', '\\'])
     while not finished.is_set():
-        sys.stdout.write('\b{}'.format(next(spinner)))
+        sys.stdout.write(f'\b{next(spinner)}')
         sys.stdout.flush()
         finished.wait(0.2)
 

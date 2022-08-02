@@ -87,7 +87,7 @@ def alert_clear():
     try:
         alerts = api.alerts()
         for alert in alerts:
-            click.echo(u'Removing {} ({})'.format(alert['name'], alert['id']))
+            click.echo(f"Removing {alert['name']} ({alert['id']})")
             api.delete_alert(alert['id'])
     except shodan.APIError as e:
         raise click.ClickException(e.value)
@@ -109,7 +109,7 @@ def alert_create(name, netblocks):
         raise click.ClickException(e.value)
 
     click.secho('Successfully created network alert!', fg='green')
-    click.secho('Alert ID: {}'.format(alert['id']), fg='cyan')
+    click.secho(f"Alert ID: {alert['id']}", fg='cyan')
 
 
 @alert.command(name='domain')
@@ -125,11 +125,11 @@ def alert_domain(domain, triggers):
         domain = domain.lower()
         click.secho('Looking up domain information...', dim=True)
         info = api.dns.domain_info(domain, type='A')
-        domain_ips = set([record['value'] for record in info['data']])
+        domain_ips = {record['value'] for record in info['data']}
 
         # Create the actual alert
         click.secho('Creating alert...', dim=True)
-        alert = api.create_alert('__domain: {}'.format(domain), list(domain_ips))
+        alert = api.create_alert(f'__domain: {domain}', list(domain_ips))
 
         # Enable the triggers so it starts getting managed by Shodan Monitor
         click.secho('Enabling triggers...', dim=True)
@@ -138,7 +138,7 @@ def alert_domain(domain, triggers):
         raise click.ClickException(e.value)
 
     click.secho('Successfully created domain alert!', fg='green')
-    click.secho('Alert ID: {}'.format(alert['id']), fg='cyan')
+    click.secho(f"Alert ID: {alert['id']}", fg='cyan')
 
 
 @alert.command(name='download')
@@ -161,11 +161,7 @@ def alert_download(filename, alert_id):
     try:
         # Get the list of alerts for the user
         click.echo('Looking up alert information...')
-        if alert_id:
-            alerts = [api.alerts(aid=alert_id.strip())]
-        else:
-            alerts = api.alerts()
-        
+        alerts = [api.alerts(aid=alert_id.strip())] if alert_id else api.alerts()
         click.echo('Compiling list of networks/ IPs to download...')
         for alert in alerts:
             for net in alert['filters']['ip']:
@@ -173,16 +169,16 @@ def alert_download(filename, alert_id):
                     networks.add(net)
                 else:
                     ips.add(net)
-        
+
         click.echo('Downloading...')
         with open_file(filename) as fout:
             # Check if the user is able to use batch IP lookups
             batch_size = 1
-            if len(ips) > 0:
+            if ips:
                 api_info = api.info()
                 if api_info['plan'] in ['corp', 'stream-100']:
                     batch_size = 100
-            
+
             # Convert it to a list so we can index into it
             ips = list(ips)
 
@@ -193,14 +189,14 @@ def alert_download(filename, alert_id):
                     results = api.host(ip)
                     if not isinstance(results, list):
                         results = [results]
-                    
+
                     for host in results:
                         for banner in host['data']:
                             write_banner(fout, banner)
                 except APIError:
                     pass
                 sleep(1)  # Slow down a bit to make sure we don't hit the rate limit
-            
+
             # Grab all the network ranges
             for net in networks:
                 try:
@@ -208,7 +204,7 @@ def alert_download(filename, alert_id):
                     click.echo(net)
                     for banner in api.search_cursor('net:{}'.format(net)):
                         write_banner(fout, banner)
-                        
+
                         # Slow down a bit to make sure we don't hit the rate limit
                         if counter % 100 == 0:
                             sleep(1)
@@ -217,7 +213,7 @@ def alert_download(filename, alert_id):
                     pass
     except shodan.APIError as e:
         raise click.ClickException(e.value)
-    
+
     click.secho('Successfully downloaded results into: {}'.format(filename), fg='green')
 
 
@@ -330,11 +326,11 @@ def alert_stats(limit, filename, facets):
     # TODO: The below code was taken from __main__.py:stats() - we should refactor it so the code can be shared
     # Print the stats tables
     for facet in results['facets']:
-        click.echo('Top {} Results for Facet: {}'.format(len(results['facets'][facet]), facet))
+        click.echo(f"Top {len(results['facets'][facet])} Results for Facet: {facet}")
 
         for item in results['facets'][facet]:
             # Force the value to be a string - necessary because some facet values are numbers
-            value = u'{}'.format(item['value'])
+            value = f"{item['value']}"
 
             click.echo(click.style(u'{:28s}'.format(value), fg='cyan'), nl=False)
             click.echo(click.style(u'{:12,d}'.format(item['count']), fg='green'))
@@ -352,8 +348,7 @@ def alert_stats(limit, filename, facets):
         # Write the header that contains the facets
         row = []
         for facet in results['facets']:
-            row.append(facet)
-            row.append('')
+            row.extend((facet, ''))
         writer.writerow(row)
 
         # Every facet has 2 columns (key, value)
@@ -361,7 +356,7 @@ def alert_stats(limit, filename, facets):
         has_items = True
         while has_items:
             # pylint: disable=W0612
-            row = ['' for i in range(len(results['facets']) * 2)]
+            row = ['' for _ in range(len(results['facets']) * 2)]
 
             pos = 0
             has_items = False
@@ -444,7 +439,7 @@ def alert_enable_trigger(alert_id, trigger):
     except shodan.APIError as e:
         raise click.ClickException(e.value)
 
-    click.secho('Successfully enabled the trigger: {}'.format(trigger), fg='green')
+    click.secho(f'Successfully enabled the trigger: {trigger}', fg='green')
 
 
 @alert.command(name='disable')
@@ -461,4 +456,4 @@ def alert_disable_trigger(alert_id, trigger):
     except shodan.APIError as e:
         raise click.ClickException(e.value)
 
-    click.secho('Successfully disabled the trigger: {}'.format(trigger), fg='green')
+    click.secho(f'Successfully disabled the trigger: {trigger}', fg='green')

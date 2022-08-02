@@ -40,7 +40,7 @@ def host_print_pretty(host, history=False):
             else:
                 vulns.append(click.style(vuln, fg='red'))
 
-        if len(vulns) > 0:
+        if vulns:
             click.echo('{:25s}'.format('Vulnerabilities:'), nl=False)
 
             for vuln in vulns:
@@ -77,24 +77,27 @@ def host_print_pretty(host, history=False):
         if 'product' in banner and banner['product']:
             product = banner['product']
         if 'version' in banner and banner['version']:
-            version = '({})'.format(banner['version'])
+            version = f"({banner['version']})"
 
         click.echo(click.style('{:>7d}'.format(banner['port']), fg='cyan'), nl=False)
         if 'transport' in banner:
             click.echo('/', nl=False)
-            click.echo(click.style('{} '.format(banner['transport']), fg='yellow'), nl=False)
-        click.echo('{} {}'.format(product, version), nl=False)
+            click.echo(click.style(f"{banner['transport']} ", fg='yellow'), nl=False)
+        click.echo(f'{product} {version}', nl=False)
 
         if history:
             # Format the timestamp to only show the year-month-day
             date = banner['timestamp'][:10]
-            click.echo(click.style('\t\t({})'.format(date), fg='white', dim=True), nl=False)
+            click.echo(click.style(f'\t\t({date})', fg='white', dim=True), nl=False)
         click.echo('')
 
         # Show optional ssl info
         if 'ssl' in banner:
             if 'versions' in banner['ssl'] and banner['ssl']['versions']:
-                click.echo('\t|-- SSL Versions: {}'.format(', '.join([item for item in sorted(banner['ssl']['versions']) if not version.startswith('-')])))
+                click.echo(
+                    f"\t|-- SSL Versions: {', '.join([item for item in sorted(banner['ssl']['versions']) if not version.startswith('-')])}"
+                )
+
             if 'dhparams' in banner['ssl'] and banner['ssl']['dhparams']:
                 click.echo('\t|-- Diffie-Hellman Parameters:')
                 click.echo('\t\t{:15s}{}\n\t\t{:15s}{}'.format('Bits:', banner['ssl']['dhparams']['bits'], 'Generator:', banner['ssl']['dhparams']['generator']))
@@ -107,12 +110,12 @@ def host_print_tsv(host, history=False):
     for banner in sorted(host['data'], key=lambda k: k['port']):
         click.echo(click.style('{:>7d}'.format(banner['port']), fg='cyan'), nl=False)
         click.echo('\t', nl=False)
-        click.echo(click.style('{} '.format(banner['transport']), fg='yellow'), nl=False)
+        click.echo(click.style(f"{banner['transport']} ", fg='yellow'), nl=False)
 
         if history:
             # Format the timestamp to only show the year-month-day
             date = banner['timestamp'][:10]
-            click.echo(click.style('\t({})'.format(date), fg='white', dim=True), nl=False)
+            click.echo(click.style(f'\t({date})', fg='white', dim=True), nl=False)
         click.echo('')
 
 

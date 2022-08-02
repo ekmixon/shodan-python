@@ -31,15 +31,15 @@ def data_list(dataset):
             # Show the SHA1 checksum if available
             if file.get('sha1'):
                 click.echo(click.style('{:42s}'.format(file['sha1']), fg='green'), nl=False)
-            
-            click.echo('{}'.format(file['url']))
+
+            click.echo(f"{file['url']}")
     else:
         # If no dataset was provided then show a list of all datasets
         datasets = api.data.list_datasets()
 
         for ds in datasets:
             click.echo(click.style('{:15s}'.format(ds['name']), fg='cyan'), nl=False)
-            click.echo('{}'.format(ds['description']))
+            click.echo(f"{ds['description']}")
 
 
 @data.command(name='download')
@@ -72,18 +72,13 @@ def data_download(chunksize, filename, dataset, name):
 
     # Figure out the size of the file based on the headers
     filesize = response.headers.get('content-length', None)
-    if not filesize:
-        # Fall back to using the filesize provided by the API
-        filesize = file['size']
-    else:
-        filesize = int(filesize)
-
+    filesize = int(filesize) if filesize else file['size']
     chunk_size = 1024
     limit = filesize / chunk_size
 
     # Create a default filename based on the dataset and the filename within that dataset
     if not filename:
-        filename = '{}-{}'.format(dataset, name)
+        filename = f'{dataset}-{name}'
 
     # Open the output file and start writing to it in chunks
     with open(filename, 'wb') as fout:
@@ -92,4 +87,4 @@ def data_download(chunksize, filename, dataset, name):
                 if chunk:
                     fout.write(chunk)
 
-    click.echo(click.style('Download completed: {}'.format(filename), 'green'))
+    click.echo(click.style(f'Download completed: {filename}', 'green'))

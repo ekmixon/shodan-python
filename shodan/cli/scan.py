@@ -30,7 +30,7 @@ def scan_list():
         raise click.ClickException(e.value)
 
     if len(scans) > 0:
-        click.echo(u'# {} Scans Total - Showing 10 most recent scans:'.format(scans['total']))
+        click.echo(f"# {scans['total']} Scans Total - Showing 10 most recent scans:")
         click.echo(u'# {:20} {:<15} {:<10} {:<15s}'.format('Scan ID', 'Status', 'Size', 'Timestamp'))
         # click.echo('#' * 65)
         for scan in scans['matches'][:10]:
@@ -258,7 +258,7 @@ def scan_submit(wait, filename, force, verbose, netblocks):
                     if 'versions' in banner['ssl']:
                         # Only print SSL versions if they were successfully tested
                         versions = [version for version in sorted(banner['ssl']['versions']) if not version.startswith('-')]
-                        if len(versions) > 0:
+                        if versions:
                             click.echo('    |-- SSL Versions: {}'.format(', '.join(versions)))
                     if 'dhparams' in banner['ssl'] and banner['ssl']['dhparams']:
                         click.echo('    |-- Diffie-Hellman Parameters:')
@@ -300,7 +300,7 @@ def scan_submit(wait, filename, force, verbose, netblocks):
                             else:
                                 vulns.append(click.style(vuln, fg='red'))
 
-                        if len(vulns) > 0:
+                        if vulns:
                             click.echo('  {:25s}'.format('Vulnerabilities:'), nl=False)
 
                             for vuln in vulns:

@@ -18,7 +18,7 @@ class ImagesConverter(Converter):
     def process(self, files):
         # Get the filename from the already-open file handle and use it as
         # the directory name to store the images.
-        self.dirname = self.fout.name[:-7] + '-images'
+        self.dirname = f'{self.fout.name[:-7]}-images'
 
         # Remove the original file that was created
         self.fout.close()
@@ -33,19 +33,17 @@ class ImagesConverter(Converter):
 
         # Loop through all the banners in the data file
         for banner in iterate_files(files):
-            screenshot = get_screenshot(banner)
-            if screenshot:
-                filename = '{}/{}-{}'.format(self.dirname, get_ip(banner), banner['port'])
+            if screenshot := get_screenshot(banner):
+                filename = f"{self.dirname}/{get_ip(banner)}-{banner['port']}"
 
                 # If a file with the name already exists then count up until we
                 # create a new, unique filename
                 counter = 0
                 tmpname = filename
-                while os.path.exists(tmpname + '.jpg'):
-                    tmpname = '{}-{}'.format(filename, counter)
+                while os.path.exists(f'{tmpname}.jpg'):
+                    tmpname = f'{filename}-{counter}'
                     counter += 1
-                filename = tmpname + '.jpg'
+                filename = f'{tmpname}.jpg'
 
-                fout = open(filename, 'wb')
-                fout.write(decode(screenshot['data'].encode(), 'base64'))
-                fout.close()
+                with open(filename, 'wb') as fout:
+                    fout.write(decode(screenshot['data'].encode(), 'base64'))

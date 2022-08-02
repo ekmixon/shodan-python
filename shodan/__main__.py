@@ -111,7 +111,7 @@ def convert(fields, input, format):
     basename = input.replace('.json.gz', '').replace('.json', '')
 
     # Add the new file extension based on the format
-    filename = '{}.{}'.format(basename, format)
+    filename = f'{basename}.{format}'
 
     # Open the output file
     fout = open(filename, 'w')
@@ -130,9 +130,19 @@ def convert(fields, input, format):
     progress_bar_thread.join()
 
     if format == 'images':
-        click.echo(click.style('\rSuccessfully extracted images to directory: {}'.format(converter.dirname), fg='green'))
+        click.echo(
+            click.style(
+                f'\rSuccessfully extracted images to directory: {converter.dirname}',
+                fg='green',
+            )
+        )
+
     else:
-        click.echo(click.style('\rSuccessfully created new file: {}'.format(filename), fg='green'))
+        click.echo(
+            click.style(
+                f'\rSuccessfully created new file: {filename}', fg='green'
+            )
+        )
 
 
 @main.command(name='domain')
@@ -159,7 +169,7 @@ def domain_info(domain, details, save, history, type):
 
         fout = None
         if save:
-            filename = u'{}-hosts.json.gz'.format(domain)
+            filename = f'{domain}-hosts.json.gz'
             fout = helpers.open_file(filename)
 
         for ip in ips:
@@ -176,7 +186,7 @@ def domain_info(domain, details, save, history, type):
 
     # Save the DNS data
     if save:
-        filename = u'{}.json.gz'.format(domain)
+        filename = f'{domain}.json.gz'
         fout = helpers.open_file(filename)
 
         for record in info['data']:
@@ -197,7 +207,12 @@ def domain_info(domain, details, save, history, type):
 
         if record['value'] in hosts:
             host = hosts[record['value']]
-            click.secho(u' Ports: {}'.format(', '.join([str(port) for port in sorted(host['ports'])])), fg='blue', nl=False)
+            click.secho(
+                f" Ports: {', '.join([str(port) for port in sorted(host['ports'])])}",
+                fg='blue',
+                nl=False,
+            )
+
 
         click.echo('')
 
@@ -212,7 +227,10 @@ def init(key):
         try:
             os.makedirs(shodan_dir)
         except OSError:
-            raise click.ClickException('Unable to create directory to store the Shodan API key ({})'.format(shodan_dir))
+            raise click.ClickException(
+                f'Unable to create directory to store the Shodan API key ({shodan_dir})'
+            )
+
 
     # Make sure it's a valid API key
     key = key.strip()
@@ -223,7 +241,7 @@ def init(key):
         raise click.ClickException(e.value)
 
     # Store the API key in the user's directory
-    keyfile = shodan_dir + '/api_key'
+    keyfile = f'{shodan_dir}/api_key'
     with open(keyfile, 'w') as fout:
         fout.write(key.strip())
         click.echo(click.style('Successfully initialized', fg='green'))
@@ -241,7 +259,7 @@ def count(query):
     query = ' '.join(query).strip()
 
     # Make sure the user didn't supply an empty string
-    if query == '':
+    if not query:
         raise click.ClickException('Empty search query')
 
     # Perform the search
@@ -266,7 +284,7 @@ def download(limit, filename, query):
     query = ' '.join(query).strip()
 
     # Make sure the user didn't supply an empty string
-    if query == '':
+    if not query:
         raise click.ClickException('Empty search query')
 
     filename = filename.strip()
@@ -316,7 +334,7 @@ def download(limit, filename, query):
         # Let the user know we're done
         if count < limit:
             click.echo(click.style('Notice: fewer results were saved than requested', 'yellow'))
-        click.echo(click.style(u'Saved {} results into file {}'.format(count, filename), 'green'))
+        click.echo(click.style(f'Saved {count} results into file {filename}', 'green'))
 
 
 @main.command()
@@ -339,7 +357,7 @@ def host(format, history, filename, save, ip):
         # Store the results
         if filename or save:
             if save:
-                filename = '{}.json.gz'.format(ip)
+                filename = f'{ip}.json.gz'
 
             # Add the appropriate extension if it's not there atm
             if not filename.endswith('.json.gz'):
@@ -382,7 +400,7 @@ def parse(color, fields, filters, filename, separator, filenames):
     # Strip out any whitespace in the fields and turn them into an array
     fields = [item.strip() for item in fields.split(',')]
 
-    if len(fields) == 0:
+    if not fields:
         raise click.ClickException('Please define at least one property to show')
 
     has_filters = len(filters) > 0
@@ -413,15 +431,14 @@ def parse(color, fields, filters, filename, separator, filenames):
         # Loop over all the fields and print the banner as a row
         for i, field in enumerate(fields):
             tmp = u''
-            value = get_banner_field(banner, field)
-            if value:
+            if value := get_banner_field(banner, field):
                 field_type = type(value)
 
                 # If the field is an array then merge it together
                 if field_type == list:
                     tmp = u';'.join(value)
                 elif field_type in [int, float]:
-                    tmp = u'{}'.format(value)
+                    tmp = f'{value}'
                 else:
                     tmp = escape_data(value)
 
@@ -469,7 +486,7 @@ def search(color, fields, limit, separator, query):
     query = ' '.join(query).strip()
 
     # Make sure the user didn't supply an empty string
-    if query == '':
+    if not query:
         raise click.ClickException('Empty search query')
 
     # For now we only allow up to 1000 results at a time
@@ -479,7 +496,7 @@ def search(color, fields, limit, separator, query):
     # Strip out any whitespace in the fields and turn them into an array
     fields = [item.strip() for item in fields.split(',')]
 
-    if len(fields) == 0:
+    if not fields:
         raise click.ClickException('Please define at least one property to show')
 
     # Perform the search
@@ -501,15 +518,14 @@ def search(color, fields, limit, separator, query):
         # Loop over all the fields and print the banner as a row
         for field in fields:
             tmp = u''
-            value = get_banner_field(banner, field)
-            if value:
+            if value := get_banner_field(banner, field):
                 field_type = type(value)
 
                 # If the field is an array then merge it together
                 if field_type == list:
                     tmp = u';'.join(value)
                 elif field_type in [int, float]:
-                    tmp = u'{}'.format(value)
+                    tmp = f'{value}'
                 else:
                     tmp = escape_data(value)
 
@@ -521,9 +537,9 @@ def search(color, fields, limit, separator, query):
                 row += tmp
             row += separator
 
-            # click.echo(out + separator, nl=False)
+                    # click.echo(out + separator, nl=False)
         output += row + u'\n'
-        # click.echo('')
+            # click.echo('')
     click.echo_via_pager(output)
 
 
@@ -542,7 +558,7 @@ def stats(limit, facets, filename, query):
     query = ' '.join(query).strip()
 
     # Make sure the user didn't supply an empty string
-    if query == '':
+    if not query:
         raise click.ClickException('Empty search query')
 
     facets = facets.split(',')
@@ -556,11 +572,11 @@ def stats(limit, facets, filename, query):
 
     # Print the stats tables
     for facet in results['facets']:
-        click.echo('Top {} Results for Facet: {}'.format(len(results['facets'][facet]), facet))
+        click.echo(f"Top {len(results['facets'][facet])} Results for Facet: {facet}")
 
         for item in results['facets'][facet]:
             # Force the value to be a string - necessary because some facet values are numbers
-            value = u'{}'.format(item['value'])
+            value = f"{item['value']}"
 
             click.echo(click.style(u'{:28s}'.format(value), fg='cyan'), nl=False)
             click.echo(click.style(u'{:12,d}'.format(item['count']), fg='green'))
@@ -584,8 +600,7 @@ def stats(limit, facets, filename, query):
         # Write the header that contains the facets
         row = []
         for facet in results['facets']:
-            row.append(facet)
-            row.append('')
+            row.extend((facet, ''))
         writer.writerow(row)
 
         # Every facet has 2 columns (key, value)
@@ -593,7 +608,7 @@ def stats(limit, facets, filename, query):
         has_items = True
         while has_items:
             # pylint: disable=W0612
-            row = ['' for i in range(len(results['facets']) * 2)]
+            row = ['' for _ in range(len(results['facets']) * 2)]
 
             pos = 0
             has_items = False
@@ -645,7 +660,7 @@ def stream(streamer, fields, separator, datadir, asn, alert, countries, custom_f
     # Strip out any whitespace in the fields and turn them into an array
     fields = [item.strip() for item in fields.split(',')]
 
-    if len(fields) == 0:
+    if not fields:
         raise click.ClickException('Please define at least one property to show')
 
     # The user must choose "ports", "countries", "asn" or nothing - can't select multiple
@@ -704,11 +719,7 @@ def stream(streamer, fields, separator, datadir, asn, alert, countries, custom_f
     # - asn
     # - countries
     # - ports
-    if len(stream_type) == 1:
-        stream_type = stream_type[0]
-    else:
-        stream_type = 'all'
-
+    stream_type = stream_type[0] if len(stream_type) == 1 else 'all'
     # Decide which stream to subscribe to based on whether or not ports were selected
     def _create_stream(name, args, timeout):
         return {
@@ -811,7 +822,7 @@ def honeyscore(ip):
         else:
             click.echo(click.style('Not a honeypot', fg='green'))
 
-        click.echo('Score: {}'.format(score))
+        click.echo(f'Score: {score}')
     except Exception:
         raise click.ClickException('Unable to calculate honeyscore')
 
@@ -829,7 +840,7 @@ def radar():
     except shodan.APIError as e:
         raise click.ClickException(e.value)
     except Exception as e:
-        raise click.ClickException(u'{}'.format(e))
+        raise click.ClickException(f'{e}')
 
 
 @main.command()

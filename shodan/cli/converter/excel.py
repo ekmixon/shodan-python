@@ -103,13 +103,10 @@ class ExcelConverter(Converter):
 
         # Ports Distribution
         summary_sheet.write(0, 3, 'Ports Distribution', bold)
-        row = 1
         col = 3
-        for key, value in sorted(ports.items(), reverse=True, key=lambda kv: (kv[1], kv[0])):
+        for row, (key, value) in enumerate(sorted(ports.items(), reverse=True, key=lambda kv: (kv[1], kv[0])), start=1):
             summary_sheet.write(row, col, key)
             summary_sheet.write(row, col + 1, value)
-            row += 1
-        
         workbook.close()
 
     def banner_field(self, banner, flat_field):

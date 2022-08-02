@@ -19,7 +19,7 @@ def create_facet_string(facets):
         if isinstance(facet, basestring):
             facet_str += facet
         else:
-            facet_str += '{}:{}'.format(facet[0], facet[1])
+            facet_str += f'{facet[0]}:{facet[1]}'
         facet_str += ','
     return facet_str[:-1]
 
@@ -116,9 +116,7 @@ def iterate_files(files, fast=False):
             if not isinstance(line, basestring):
                 line = line.decode('utf-8')
 
-            # Convert the JSON into a native Python object
-            banner = loads(line)
-            yield banner
+            yield loads(line)
 
 
 def get_screenshot(banner):
@@ -128,9 +126,7 @@ def get_screenshot(banner):
 
 
 def get_ip(banner):
-    if 'ipv6' in banner:
-        return banner['ipv6']
-    return banner['ip_str']
+    return banner['ipv6'] if 'ipv6' in banner else banner['ip_str']
 
 
 def open_file(filename, mode='a', compresslevel=9):

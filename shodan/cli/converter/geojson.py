@@ -47,6 +47,6 @@ class GeoJsonConverter(Converter):
                     'coordinates': [lon, lat],
                 },
             }
-            self.fout.write(dumps(feature) + ',')
+            self.fout.write(f'{dumps(feature)},')
         except Exception:
             pass
